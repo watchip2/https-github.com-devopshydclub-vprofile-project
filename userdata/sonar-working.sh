@@ -67,7 +67,26 @@ EOT
 
 # Create systemd service for SonarQube
 cat <<EOT> /etc/systemd/system/sonarqube.service
-# ... (service unit configuration)
+[Unit]
+Description=SonarQube service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+
+User=sonar
+Group=sonar
+Restart=always
+
+LimitNOFILE=65536
+LimitNPROC=4096
+
+
+[Install]
+WantedBy=multi-user.target
 EOT
 
 # Reload systemd and enable SonarQube service
