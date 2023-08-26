@@ -99,6 +99,27 @@ rm -rf /etc/nginx/sites-enabled/default
 rm -rf /etc/nginx/sites-available/default
 cat <<EOT> /etc/nginx/sites-available/sonarqube
 # ... (Nginx configuration)
+server{
+    listen      80;
+    server_name sonarqube.groophy.in;
+
+    access_log  /var/log/nginx/sonar.access.log;
+    error_log   /var/log/nginx/sonar.error.log;
+
+    proxy_buffers 16 64k;
+    proxy_buffer_size 128k;
+
+    location / {
+        proxy_pass  http://127.0.0.1:9000;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_redirect off;
+              
+        proxy_set_header    Host            \$host;
+        proxy_set_header    X-Real-IP       \$remote_addr;
+        proxy_set_header    X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Proto http;
+    }
+}
 EOT
 ln -s /etc/nginx/sites-available/sonarqube /etc/nginx/sites-enabled/sonarqube
 systemctl enable nginx.service
